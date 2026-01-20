@@ -1,0 +1,141 @@
+body {
+  background: linear-gradient(135deg, #eef2ff, #e0f7fa);
+  font-family: "Segoe UI", sans-serif;
+  margin: 28px;
+  color: #1f2933;
+}
+
+.center {
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 22px;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+h2 {
+  margin-bottom: 18px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.card {
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.92),
+    rgba(255,255,255,0.82)
+  );
+  border-radius: 22px;
+  padding: 26px 24px;
+  margin-bottom: 30px;
+  border: 1px solid rgba(180, 200, 230, 0.55);
+  box-shadow:
+    0 14px 36px rgba(0,0,0,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.7);
+}
+
+.date-control {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+  font-size: 16px;
+  color: #5b6b7a;
+}
+
+.date-control input {
+  padding: 9px 14px;
+  border-radius: 12px;
+  border: 1px solid #dbe3f2;
+  font-size: 15px;
+  background: rgba(255,255,255,0.85);
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 22px;
+}
+
+.kpi-card {
+  background: linear-gradient(
+    135deg,
+    rgba(248,250,255,0.96),
+    rgba(255,255,255,0.9)
+  );
+  border-radius: 22px;
+  padding: 22px 18px;
+  text-align: center;
+  border: 1px solid #e5ecf7;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+}
+
+.kpi-title {
+  font-size: 16px;
+  color: #6b7280;
+}
+
+.kpi-value {
+  font-size: 30px;
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+.kpi-rate {
+  margin-top: 8px;
+  font-size: 16px;
+  color: #6b7280;
+}
+
+.progress-wrap {
+  background: #eef2ff;
+  border-radius: 12px;
+  overflow: hidden;
+  height: 14px;
+  margin-top: 16px;
+  border: 1px solid #e0e7ff;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: 12px;
+  transition: width 1.2s ease;
+}
+
+#area-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.area-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.area-name {
+  width: 100px;
+  font-size: 15px;
+}
+
+.area-bar-wrap {
+  flex: 1;
+  background: #eef2ff;
+  border-radius: 12px;
+  overflow: hidden;
+  height: 14px;
+  border: 1px solid #e0e7ff;
+}
+
+.area-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #a5b4fc, #7b9cff);
+  transition: width 1.2s ease;
+}

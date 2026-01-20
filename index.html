@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>物件開発 進捗ダッシュボード</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<h1 class="center">物件開発 進捗ダッシュボード</h1>
+
+<section class="card">
+  <h2 class="center">週次サマリー</h2>
+
+  <div class="date-control">
+    <label>対象週：</label>
+    <input type="date" id="weekStartInput" />
+    <span id="date-range"></span>
+  </div>
+
+  <div id="weekly-kpi-cards" class="kpi-grid"></div>
+</section>
+
+<section class="card">
+  <h2 class="center">新規物件数：エリア別</h2>
+  <div id="area-bars"></div>
+</section>
+
+<section class="card">
+  <h2 class="center">月次サマリー</h2>
+  <div id="monthly-kpi-cards" class="kpi-grid"></div>
+</section>
+
+<section class="card">
+  <h2 class="center">年次サマリー</h2>
+  <div id="yearly-kpi-cards" class="kpi-grid"></div>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>
