@@ -494,33 +494,39 @@
         const westJapanAreas = ['中部', '近畿', '中国', '四国', '九州'];
         const typeKeys = ['BI', 'RS', 'SI', '開発'];
 
-        // 日付を YYYY-MM-DD 形式の文字列に変換（タイムゾーンの影響を受けない）
-        function formatDateString(date) {
+        // 日付をYYYY-MM-DD形式に変換（時刻を0:00:00にリセット）
+        function toDateString(date) {
             const d = new Date(date);
+            d.setHours(0, 0, 0, 0);
             const year = d.getFullYear();
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
 
-        // 日付文字列を正規化（様々な形式に対応）
+        // 日付文字列を正規化
         function normalizeDateString(dateStr) {
             if (!dateStr) return null;
             
-            // 既に YYYY-MM-DD 形式の場合
+            // 既にYYYY-MM-DD形式の場合
             if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
                 return dateStr;
             }
             
-            // Date オブジェクトに変換してから YYYY-MM-DD 形式に
+            // Date変換してYYYY-MM-DD形式に
             try {
                 const d = new Date(dateStr);
                 if (isNaN(d.getTime())) return null;
-                return formatDateString(d);
+                return toDateString(d);
             } catch (e) {
-                console.error('日付の変換に失敗:', dateStr, e);
+                console.error('日付変換失敗:', dateStr, e);
                 return null;
             }
+        }
+
+        // 今日の日付をYYYY-MM-DD形式で取得
+        function getTodayString() {
+            return toDateString(new Date());
         }
 
         async function fetchData() {
@@ -567,7 +573,7 @@
             const endDateStr = normalizeDateString(endDate);
 
             if (!startDateStr || !endDateStr) {
-                console.error('日付の正規化に失敗:', { startDate, endDate });
+                console.error('日付正規化失敗:', { startDate, endDate });
                 return {};
             }
 
@@ -575,7 +581,7 @@
                 const dateStr = normalizeDateString(d['日付']);
                 if (!dateStr) return false;
                 
-                // 文字列比較（タイムゾーンの影響を受けない）
+                // 文字列比較（タイムゾーン影響なし）
                 return dateStr >= startDateStr && dateStr <= endDateStr;
             });
 
@@ -622,35 +628,43 @@
             const prevStart = new Date(prevEnd);
             prevStart.setTime(prevStart.getTime() - duration);
 
-            return aggregateData(formatDateString(prevStart), formatDateString(prevEnd));
+            return aggregateData(toDateString(prevStart), toDateString(prevEnd));
         }
 
         function getMonthData() {
             const now = new Date();
-            const start = new Date(now.getFullYear(), now.getMonth(), 1);
-            const end = now;
-            return aggregateData(formatDateString(start), formatDateString(end));
+            const startDate = toDateString(new Date(now.getFullYear(), now.getMonth(), 1));
+            // 月の最終日まで集計
+            const endDate = toDateString(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+            
+            return aggregateData(startDate, endDate);
         }
 
         function getPreviousMonthData() {
             const now = new Date();
-            const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-            const end = new Date(now.getFullYear(), now.getMonth(), 0);
-            return aggregateData(formatDateString(start), formatDateString(end));
+            const startDate = toDateString(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+            // 前月の最終日まで集計
+            const endDate = toDateString(new Date(now.getFullYear(), now.getMonth(), 0));
+            
+            return aggregateData(startDate, endDate);
         }
 
         function getYearData() {
             const now = new Date();
-            const start = new Date(now.getFullYear(), 0, 1);
-            const end = now;
-            return aggregateData(formatDateString(start), formatDateString(end));
+            const startDate = toDateString(new Date(now.getFullYear(), 0, 1));
+            // 12/31まで集計
+            const endDate = toDateString(new Date(now.getFullYear(), 11, 31));
+            
+            return aggregateData(startDate, endDate);
         }
 
         function getPreviousYearData() {
             const now = new Date();
-            const start = new Date(now.getFullYear() - 1, 0, 1);
-            const end = new Date(now.getFullYear() - 1, 11, 31);
-            return aggregateData(formatDateString(start), formatDateString(end));
+            const startDate = toDateString(new Date(now.getFullYear() - 1, 0, 1));
+            // 前年の12/31まで集計
+            const endDate = toDateString(new Date(now.getFullYear() - 1, 11, 31));
+            
+            return aggregateData(startDate, endDate);
         }
 
         function getCurrentMonthTarget() {
