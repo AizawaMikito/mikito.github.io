@@ -344,6 +344,12 @@
             border-radius: 12px;
             margin-bottom: 20px;
             border: 1px solid #feb2b2;
+            font-size: 14px;
+        }
+
+        .error-title {
+            font-weight: 600;
+            margin-bottom: 6px;
         }
 
         @media (max-width: 1024px) {
@@ -488,11 +494,54 @@
         const westJapanAreas = ['中部', '近畿', '中国', '四国', '九州'];
         const typeKeys = ['BI', 'RS', 'SI', '開発'];
 
+        // 日付を YYYY-MM-DD 形式の文字列に変換（タイムゾーンの影響を受けない）
+        function formatDateString(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // 日付文字列を正規化（様々な形式に対応）
+        function normalizeDateString(dateStr) {
+            if (!dateStr) return null;
+            
+            // 既に YYYY-MM-DD 形式の場合
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                return dateStr;
+            }
+            
+            // Date オブジェクトに変換してから YYYY-MM-DD 形式に
+            try {
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return null;
+                return formatDateString(d);
+            } catch (e) {
+                console.error('日付の変換に失敗:', dateStr, e);
+                return null;
+            }
+        }
+
         async function fetchData() {
             try {
                 const response = await fetch(API_URL);
-                if (!response.ok) throw new Error('データの取得に失敗しました');
+                
+                if (!response.ok) {
+                    throw new Error(`APIエラー: ${response.status} ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                
+                // データ検証
+                if (!data || !data.actualData || !Array.isArray(data.actualData)) {
+                    throw new Error('データ形式が不正です。actualData配列が見つかりません。');
+                }
+                
+                if (data.actualData.length === 0) {
+                    throw new Error('データが空です。');
+                }
+                
                 allData = data;
                 
                 document.getElementById('loading').style.display = 'none';
@@ -502,18 +551,32 @@
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('errorMessage').innerHTML = `
                     <div class="error">
-                        ⚠️ ${error.message}
+                        <div class="error-title">⚠️ データの読み込みに失敗しました</div>
+                        <div>${error.message}</div>
                     </div>
                 `;
+                console.error('データ取得エラー:', error);
             }
         }
 
         function aggregateData(startDate, endDate) {
             if (!allData || !allData.actualData) return {};
 
+            // 日付文字列を正規化
+            const startDateStr = normalizeDateString(startDate);
+            const endDateStr = normalizeDateString(endDate);
+
+            if (!startDateStr || !endDateStr) {
+                console.error('日付の正規化に失敗:', { startDate, endDate });
+                return {};
+            }
+
             const filteredData = allData.actualData.filter(d => {
-                const date = new Date(d['日付']);
-                return date >= new Date(startDate) && date <= new Date(endDate);
+                const dateStr = normalizeDateString(d['日付']);
+                if (!dateStr) return false;
+                
+                // 文字列比較（タイムゾーンの影響を受けない）
+                return dateStr >= startDateStr && dateStr <= endDateStr;
             });
 
             const aggregated = {
@@ -559,35 +622,35 @@
             const prevStart = new Date(prevEnd);
             prevStart.setTime(prevStart.getTime() - duration);
 
-            return aggregateData(prevStart, prevEnd);
+            return aggregateData(formatDateString(prevStart), formatDateString(prevEnd));
         }
 
         function getMonthData() {
             const now = new Date();
             const start = new Date(now.getFullYear(), now.getMonth(), 1);
             const end = now;
-            return aggregateData(start, end);
+            return aggregateData(formatDateString(start), formatDateString(end));
         }
 
         function getPreviousMonthData() {
             const now = new Date();
             const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
             const end = new Date(now.getFullYear(), now.getMonth(), 0);
-            return aggregateData(start, end);
+            return aggregateData(formatDateString(start), formatDateString(end));
         }
 
         function getYearData() {
             const now = new Date();
             const start = new Date(now.getFullYear(), 0, 1);
             const end = now;
-            return aggregateData(start, end);
+            return aggregateData(formatDateString(start), formatDateString(end));
         }
 
         function getPreviousYearData() {
             const now = new Date();
             const start = new Date(now.getFullYear() - 1, 0, 1);
             const end = new Date(now.getFullYear() - 1, 11, 31);
-            return aggregateData(start, end);
+            return aggregateData(formatDateString(start), formatDateString(end));
         }
 
         function getCurrentMonthTarget() {
@@ -729,6 +792,10 @@
         function updateDashboard() {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
+
+            if (!startDate || !endDate) {
+                return;
+            }
 
             // 週次
             const weeklyData = aggregateData(startDate, endDate);
