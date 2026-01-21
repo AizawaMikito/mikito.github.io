@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物件開発ダッシュボード</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #fafbfc;
+            color: #2c3e50;
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        input[type="date"] {
+            background: white;
+            border: 1px solid #e2e8f0;
+            color: #2d3748;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        input[type="date"]:focus {
+            outline: none;
+            border-color: #ccfe40;
+        }
+
+        .period-section {
+            margin-bottom: 50px;
+        }
+
+        .period-header {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .period-label {
+            background: #f7fafc;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #e2e8f0;
+        }
+
+        .metric-card.high-progress::before {
+            background: #38a169;
+        }
+
+        .metric-card.medium-progress::before {
+            background: #d69e2e;
+        }
+
+        .metric-card.low-progress::before {
+            background: #e53e3e;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            border-color: #ccfe40;
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: #718096;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        .metric-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0aec0;
+        }
+
+        .metric-values {
+            margin-bottom: 16px;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a202c;
+            line-height: 1;
+        }
+
+        .metric-target {
+            font-size: 14px;
+            color: #a0aec0;
+            margin-top: 6px;
+        }
+
+        .metric-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            padding-top: 16px;
+            border-top: 1px solid #f7fafc;
+        }
+
+        .progress-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .progress-badge.high {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .progress-badge.medium {
+            background: #feebc8;
+            color: #744210;
+        }
+
+        .progress-badge.low {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .change {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 600;
+        }
+
+        .change.positive {
+            color: #38a169;
+        }
+
+        .change.negative {
+            color: #e53e3e;
+        }
+
+        .change.neutral {
+            color: #a0aec0;
+        }
+
+        .change-label {
+            font-size: 11px;
+            color: #a0aec0;
+            font-weight: 500;
+            margin-right: 4px;
+        }
+
+        .breakdown-section {
+            margin-top: 40px;
+        }
+
+        .breakdown-header {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .breakdown-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .breakdown-subsection {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .breakdown-subsection-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f7fafc;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .breakdown-subsection-title svg {
+            width: 18px;
+            height: 18px;
+            color: #a0aec0;
+        }
+
+        .breakdown-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .breakdown-card {
+            background: #fafbfc;
+            border-radius: 12px;
+            padding: 20px 16px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        .breakdown-card:hover {
+            background: white;
+            border-color: #ccfe40;
+            transform: translateY(-2px);
+        }
+
+        .breakdown-label {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .breakdown-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a202c;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .breakdown-percentage {
+            font-size: 12px;
+            color: #a0aec0;
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 16px;
+            color: #718096;
+        }
+
+        .error {
+            background: #fff5f5;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #feb2b2;
+        }
+
+        @media (max-width: 1024px) {
+            .breakdown-split {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            .breakdown-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>物件開発ダッシュボード</h1>
+            <p class="subtitle">Property Development Dashboard</p>
+            <div class="header-controls">
+                <div class="control-group">
+                    <label>週次表示期間:</label>
+                    <input type="date" id="startDate">
+                    <span>〜</span>
+                    <input type="date" id="endDate">
+                </div>
+            </div>
+        </header>
+
+        <div id="errorMessage"></div>
+        <div id="loading" class="loading">データを読み込み中...</div>
+
+        <div id="metricsContainer" style="display: none;">
+            <!-- 週次 -->
+            <div class="period-section">
+                <div class="period-header">
+                    週次実績
+                    <span class="period-label" id="weeklyPeriodLabel"></span>
+                </div>
+                <div class="metrics-grid" id="weeklyMetrics"></div>
+                
+                <div class="breakdown-section">
+                    <div class="breakdown-header">詳細内訳</div>
+                    
+                    <div class="breakdown-split">
+                        <div class="breakdown-subsection">
+                            <div class="breakdown-subsection-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                    <circle cx="12" cy="10" r="3"/>
+                                </svg>
+                                エリア別（東日本）
+                            </div>
+                            <div class="breakdown-grid" id="eastJapanBreakdown"></div>
+                        </div>
+                        
+                        <div class="breakdown-subsection">
+                            <div class="breakdown-subsection-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                    <circle cx="12" cy="10" r="3"/>
+                                </svg>
+                                エリア別（西日本）
+                            </div>
+                            <div class="breakdown-grid" id="westJapanBreakdown"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="breakdown-subsection" style="margin-top: 30px;">
+                        <div class="breakdown-subsection-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"/>
+                                <rect x="14" y="3" width="7" height="7"/>
+                                <rect x="14" y="14" width="7" height="7"/>
+                                <rect x="3" y="14" width="7" height="7"/>
+                            </svg>
+                            物件タイプ別
+                        </div>
+                        <div class="breakdown-grid" id="weeklyTypeBreakdown"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 月次 -->
+            <div class="period-section">
+                <div class="period-header">
+                    月次実績
+                    <span class="period-label" id="monthlyPeriodLabel"></span>
+                </div>
+                <div class="metrics-grid" id="monthlyMetrics"></div>
+            </div>
+
+            <!-- 年次 -->
+            <div class="period-section">
+                <div class="period-header">
+                    年次実績
+                    <span class="period-label" id="yearlyPeriodLabel"></span>
+                </div>
+                <div class="metrics-grid" id="yearlyMetrics"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxqi-BNiWumdvsAp3n-TxPHNg8mbg3s9n-aB8ocMmUhlgIv4RIQbEbtwIYBKe6M5zhtIg/exec';
+        
+        let allData = null;
+
+        const metrics = [
+            { 
+                key: 'newProperties', 
+                label: '新規物件数', 
+                icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>`
+            },
+            { 
+                key: 'activeProperties', 
+                label: '有効物件数', 
+                icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>`
+            },
+            { 
+                key: 'viewings', 
+                label: '内覧数', 
+                icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
+            },
+            { 
+                key: 'applications', 
+                label: '申込数', 
+                icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>`
+            },
+            { 
+                key: 'contracts', 
+                label: '契約数', 
+                icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>`
+            }
+        ];
+
+        const eastJapanAreas = ['北海道', '東北', '北陸', '北関東', '一都三県'];
+        const westJapanAreas = ['中部', '近畿', '中国', '四国', '九州'];
+        const typeKeys = ['BI', 'RS', 'SI', '開発'];
+
+        async function fetchData() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error('データの取得に失敗しました');
+                const data = await response.json();
+                allData = data;
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('metricsContainer').style.display = 'block';
+                updateDashboard();
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('errorMessage').innerHTML = `
+                    <div class="error">
+                        ⚠️ ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function aggregateData(startDate, endDate) {
+            if (!allData || !allData.actualData) return {};
+
+            const filteredData = allData.actualData.filter(d => {
+                const date = new Date(d['日付']);
+                return date >= new Date(startDate) && date <= new Date(endDate);
+            });
+
+            const aggregated = {
+                newProperties: 0,
+                activeProperties: 0,
+                viewings: 0,
+                applications: 0,
+                contracts: 0
+            };
+
+            const areaAggregated = {};
+            [...eastJapanAreas, ...westJapanAreas].forEach(key => areaAggregated[key] = 0);
+
+            const typeAggregated = {};
+            typeKeys.forEach(key => typeAggregated[key] = 0);
+
+            filteredData.forEach(item => {
+                aggregated.newProperties += item['新規物件数'] || 0;
+                aggregated.activeProperties += item['有効物件数'] || 0;
+                aggregated.viewings += item['内覧数'] || 0;
+                aggregated.applications += item['申込数'] || 0;
+                aggregated.contracts += item['契約数'] || 0;
+
+                [...eastJapanAreas, ...westJapanAreas].forEach(key => {
+                    areaAggregated[key] += item[key] || 0;
+                });
+
+                typeKeys.forEach(key => {
+                    typeAggregated[key] += item[key] || 0;
+                });
+            });
+
+            return { ...aggregated, areaData: areaAggregated, typeData: typeAggregated };
+        }
+
+        function getPreviousPeriodData(startDate, endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const duration = end - start;
+            
+            const prevEnd = new Date(start);
+            prevEnd.setDate(prevEnd.getDate() - 1);
+            const prevStart = new Date(prevEnd);
+            prevStart.setTime(prevStart.getTime() - duration);
+
+            return aggregateData(prevStart, prevEnd);
+        }
+
+        function getMonthData() {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), now.getMonth(), 1);
+            const end = now;
+            return aggregateData(start, end);
+        }
+
+        function getPreviousMonthData() {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const end = new Date(now.getFullYear(), now.getMonth(), 0);
+            return aggregateData(start, end);
+        }
+
+        function getYearData() {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), 0, 1);
+            const end = now;
+            return aggregateData(start, end);
+        }
+
+        function getPreviousYearData() {
+            const now = new Date();
+            const start = new Date(now.getFullYear() - 1, 0, 1);
+            const end = new Date(now.getFullYear() - 1, 11, 31);
+            return aggregateData(start, end);
+        }
+
+        function getCurrentMonthTarget() {
+            if (!allData || !allData.targetData) return {};
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const monthTarget = allData.targetData.find(t => t.month === currentMonth);
+            
+            if (!monthTarget) return {};
+
+            return {
+                newProperties: monthTarget.newProperties || 0,
+                activeProperties: monthTarget.activeProperties || 0,
+                viewings: monthTarget.viewings || 0,
+                applications: monthTarget.applications || 0,
+                contracts: monthTarget.contracts || 0
+            };
+        }
+
+        function getYearTarget() {
+            if (!allData || !allData.targetData) return {};
+            
+            const yearTarget = {
+                newProperties: 0,
+                activeProperties: 0,
+                viewings: 0,
+                applications: 0,
+                contracts: 0
+            };
+
+            allData.targetData.forEach(month => {
+                yearTarget.newProperties += month.newProperties || 0;
+                yearTarget.activeProperties += month.activeProperties || 0;
+                yearTarget.viewings += month.viewings || 0;
+                yearTarget.applications += month.applications || 0;
+                yearTarget.contracts += month.contracts || 0;
+            });
+
+            return yearTarget;
+        }
+
+        function getWeeklyTarget(startDate, endDate) {
+            const monthTarget = getCurrentMonthTarget();
+            const now = new Date();
+            const monthTarget_data = allData.targetData.find(t => t.month === now.getMonth() + 1);
+            const businessDays = monthTarget_data ? monthTarget_data.businessDays : 20;
+            
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            let weekBusinessDays = 0;
+            
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                const day = d.getDay();
+                if (day !== 0 && day !== 6) weekBusinessDays++;
+            }
+
+            const dailyTarget = {
+                newProperties: monthTarget.newProperties / businessDays,
+                activeProperties: monthTarget.activeProperties / businessDays,
+                viewings: monthTarget.viewings / businessDays,
+                applications: monthTarget.applications / businessDays,
+                contracts: monthTarget.contracts / businessDays
+            };
+
+            return {
+                newProperties: dailyTarget.newProperties * weekBusinessDays,
+                activeProperties: dailyTarget.activeProperties * weekBusinessDays,
+                viewings: dailyTarget.viewings * weekBusinessDays,
+                applications: dailyTarget.applications * weekBusinessDays,
+                contracts: dailyTarget.contracts * weekBusinessDays
+            };
+        }
+
+        function getProgressClass(progress) {
+            if (progress >= 80) return 'high-progress';
+            if (progress >= 50) return 'medium-progress';
+            return 'low-progress';
+        }
+
+        function getProgressBadgeClass(progress) {
+            if (progress >= 80) return 'high';
+            if (progress >= 50) return 'medium';
+            return 'low';
+        }
+
+        function createMetricCard(metric, current, target, change, showChange = true) {
+            const progress = target > 0 ? (current / target * 100) : 0;
+            const progressClass = getProgressClass(progress);
+            const badgeClass = getProgressBadgeClass(progress);
+            
+            let changeClass = 'neutral';
+            let changeIcon = '';
+            if (change > 0) {
+                changeClass = 'positive';
+                changeIcon = '↑';
+            } else if (change < 0) {
+                changeClass = 'negative';
+                changeIcon = '↓';
+            }
+            
+            const changeHtml = showChange ? `
+                <span class="change ${changeClass}">
+                    <span class="change-label">先週比</span>
+                    ${changeIcon} ${Math.abs(change).toFixed(1)}%
+                </span>
+            ` : '';
+            
+            return `
+                <div class="metric-card ${progressClass}">
+                    <div class="metric-header">
+                        <span class="metric-label">${metric.label}</span>
+                        <div class="metric-icon">
+                            ${metric.icon}
+                        </div>
+                    </div>
+                    <div class="metric-values">
+                        <div class="metric-value">${current.toLocaleString()}</div>
+                        <div class="metric-target">/ ${target.toLocaleString()}</div>
+                    </div>
+                    <div class="metric-footer">
+                        <span class="progress-badge ${badgeClass}">${progress.toFixed(0)}%</span>
+                        ${changeHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function createBreakdownCard(label, value, total) {
+            const percentage = total > 0 ? (value / total * 100) : 0;
+            return `
+                <div class="breakdown-card">
+                    <div class="breakdown-label">${label}</div>
+                    <div class="breakdown-value">${value.toLocaleString()}</div>
+                    <div class="breakdown-percentage">${percentage.toFixed(1)}%</div>
+                </div>
+            `;
+        }
+
+        function updateDashboard() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            // 週次
+            const weeklyData = aggregateData(startDate, endDate);
+            const previousWeeklyData = getPreviousPeriodData(startDate, endDate);
+            const weeklyTargets = getWeeklyTarget(startDate, endDate);
+
+            const weeklyGrid = document.getElementById('weeklyMetrics');
+            weeklyGrid.innerHTML = '';
+            
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            document.getElementById('weeklyPeriodLabel').textContent = 
+                `${start.getMonth() + 1}/${start.getDate()} 〜 ${end.getMonth() + 1}/${end.getDate()}`;
+
+            metrics.forEach(metric => {
+                const current = weeklyData[metric.key] || 0;
+                const previous = previousWeeklyData[metric.key] || 0;
+                const target = weeklyTargets[metric.key] || 0;
+                const change = previous > 0 ? ((current - previous) / previous * 100) : 0;
+                
+                weeklyGrid.innerHTML += createMetricCard(metric, current, target, change);
+            });
+
+            // 東日本エリア別内訳
+            const eastJapanBreakdown = document.getElementById('eastJapanBreakdown');
+            eastJapanBreakdown.innerHTML = '';
+            const totalNewProperties = weeklyData.newProperties || 1;
+            
+            eastJapanAreas.forEach(area => {
+                const value = weeklyData.areaData[area] || 0;
+                eastJapanBreakdown.innerHTML += createBreakdownCard(area, value, totalNewProperties);
+            });
+
+            // 西日本エリア別内訳
+            const westJapanBreakdown = document.getElementById('westJapanBreakdown');
+            westJapanBreakdown.innerHTML = '';
+            
+            westJapanAreas.forEach(area => {
+                const value = weeklyData.areaData[area] || 0;
+                westJapanBreakdown.innerHTML += createBreakdownCard(area, value, totalNewProperties);
+            });
+
+            // タイプ別内訳
+            const typeBreakdown = document.getElementById('weeklyTypeBreakdown');
+            typeBreakdown.innerHTML = '';
+            
+            typeKeys.forEach(type => {
+                const value = weeklyData.typeData[type] || 0;
+                typeBreakdown.innerHTML += createBreakdownCard(type, value, totalNewProperties);
+            });
+
+            // 月次
+            const monthlyData = getMonthData();
+            const previousMonthlyData = getPreviousMonthData();
+            const monthlyTargets = getCurrentMonthTarget();
+
+            const monthlyGrid = document.getElementById('monthlyMetrics');
+            monthlyGrid.innerHTML = '';
+            
+            const now = new Date();
+            document.getElementById('monthlyPeriodLabel').textContent = 
+                `${now.getFullYear()}年${now.getMonth() + 1}月`;
+
+            metrics.forEach(metric => {
+                const current = monthlyData[metric.key] || 0;
+                const previous = previousMonthlyData[metric.key] || 0;
+                const target = monthlyTargets[metric.key] || 0;
+                const change = previous > 0 ? ((current - previous) / previous * 100) : 0;
+                
+                monthlyGrid.innerHTML += createMetricCard(metric, current, target, change, false);
+            });
+
+            // 年次
+            const yearlyData = getYearData();
+            const previousYearlyData = getPreviousYearData();
+            const yearlyTargets = getYearTarget();
+
+            const yearlyGrid = document.getElementById('yearlyMetrics');
+            yearlyGrid.innerHTML = '';
+            
+            document.getElementById('yearlyPeriodLabel').textContent = `${now.getFullYear()}年`;
+
+            metrics.forEach(metric => {
+                const current = yearlyData[metric.key] || 0;
+                const previous = previousYearlyData[metric.key] || 0;
+                const target = yearlyTargets[metric.key] || 0;
+                const change = previous > 0 ? ((current - previous) / previous * 100) : 0;
+                
+                yearlyGrid.innerHTML += createMetricCard(metric, current, target, change, false);
+            });
+        }
+
+        document.getElementById('startDate').addEventListener('change', updateDashboard);
+        document.getElementById('endDate').addEventListener('change', updateDashboard);
+
+        // 初期日付設定
+        const today = new Date();
+        const weekAgo = new Date(today);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        document.getElementById('endDate').value = today.toISOString().split('T')[0];
+        document.getElementById('startDate').value = weekAgo.toISOString().split('T')[0];
+
+        fetchData();
+    </script>
+</body>
+</html>
